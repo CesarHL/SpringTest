@@ -1,11 +1,11 @@
 package com.helc.example.dao;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.helc.example.model.Usuario;
 
 @Repository
-public interface IUsuarioDao extends CrudRepository<Usuario, Long> {
+public interface IUsuarioDao extends JpaRepository<Usuario, Long> {
 
 }
