@@ -1,4 +1,4 @@
-package com.helc.example.restController;
+package com.helc.example.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
@@ -16,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,20 +24,27 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.helc.example.model.Usuario;
+import com.helc.example.payload.LoginRequest;
 import com.helc.example.service.IUsuarioSerivce;
 
+@CrossOrigin(origins = { "https://shrouded-ocean-90048.herokuapp.com", "http://localhost:4200" })
 @RestController
-@RequestMapping("/user/v1")
-public class UsuarioRestController {
+@RequestMapping("/v1/user")
+public class UsuarioController {
 
 	@Autowired
 	private IUsuarioSerivce usuarioService;
 
 	Map<String, Object> responseMap;
 
-	@GetMapping("/users")
+	@GetMapping("/")
 	public ResponseEntity<?> index() {
 		responseMap = new HashMap<String, Object>();
 		List<Usuario> listUsuario = usuarioService.findAll();
@@ -48,7 +55,7 @@ public class UsuarioRestController {
 		return new ResponseEntity<List<Usuario>>(listUsuario, HttpStatus.OK);
 	}
 
-	@GetMapping("/users/page/{page}")
+	@GetMapping("/page/{page}")
 	public ResponseEntity<?> index(@PathVariable Integer page) {
 		responseMap = new HashMap<String, Object>();
 		Pageable pageable = PageRequest.of(page, 10);
@@ -60,7 +67,7 @@ public class UsuarioRestController {
 		return new ResponseEntity<Page<Usuario>>(listUsuario, HttpStatus.OK);
 	}
 
-	@GetMapping("/users/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		responseMap = new HashMap<String, Object>();
 		Usuario usuario = usuarioService.findById(id);
@@ -71,7 +78,7 @@ public class UsuarioRestController {
 		return new ResponseEntity<Usuario>(usuario, HttpStatus.OK);
 	}
 
-	@PostMapping("/users")
+	@PostMapping("/")
 	public ResponseEntity<?> create(@Valid @RequestBody Usuario usuario, BindingResult result) {
 		Usuario usuarioExample = null;
 		responseMap = new HashMap<String, Object>();
@@ -99,7 +106,7 @@ public class UsuarioRestController {
 		return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.CREATED);
 	}
 
-	@PutMapping("/users/{id}")
+	@PutMapping("/{id}")
 	public ResponseEntity<?> update(@Valid @RequestBody Usuario usuario, BindingResult result, @PathVariable Long id) {
 		Usuario usuarioExample = usuarioService.findById(id);
 		responseMap = new HashMap<String, Object>();
@@ -134,7 +141,7 @@ public class UsuarioRestController {
 		return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.CREATED);
 	}
 
-	@DeleteMapping("/users/{id}")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		responseMap = new HashMap<String, Object>();
 		try {
@@ -145,6 +152,16 @@ public class UsuarioRestController {
 			return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		responseMap.put("mensaje", "Se ha borrado el usuario exitosamente");
+		return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.CREATED);
+	}
+
+	@PostMapping("/signin")
+	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+		return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.CREATED);
+	}
+
+	@PostMapping("/signup")
+	public ResponseEntity<?> registerUser(@Valid @RequestBody LoginRequest loginRequest) {
 		return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.CREATED);
 	}
 

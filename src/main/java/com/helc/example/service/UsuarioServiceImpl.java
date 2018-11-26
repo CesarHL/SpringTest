@@ -7,14 +7,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.helc.example.dao.IUsuarioDao;
 import com.helc.example.model.Usuario;
+import com.helc.example.respository.UsuarioRepository;
 
 @Service
 public class UsuarioServiceImpl implements IUsuarioSerivce {
 
 	@Autowired
-	private IUsuarioDao usuarioDao;
+	private UsuarioRepository usuarioDao;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -46,11 +46,11 @@ public class UsuarioServiceImpl implements IUsuarioSerivce {
 		usuarioDao.deleteById(id);
 	}
 
-	public IUsuarioDao getUsuarioDao() {
+	public UsuarioRepository getUsuarioDao() {
 		return usuarioDao;
 	}
 
-	public void setUsuarioDao(IUsuarioDao usuarioDao) {
+	public void setUsuarioDao(UsuarioRepository usuarioDao) {
 		this.usuarioDao = usuarioDao;
 	}
 }
