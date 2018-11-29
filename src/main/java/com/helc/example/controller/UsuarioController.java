@@ -24,12 +24,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import com.helc.example.model.Usuario;
 import com.helc.example.payload.LoginRequest;
 import com.helc.example.service.IUsuarioSerivce;
@@ -38,6 +32,9 @@ import com.helc.example.service.IUsuarioSerivce;
 @RestController
 @RequestMapping("/v1/user")
 public class UsuarioController {
+	
+	public static final String ERROR = "error";
+	public static final String MENSAJE = "mensaje";
 
 	@Autowired
 	private IUsuarioSerivce usuarioService;
@@ -46,42 +43,42 @@ public class UsuarioController {
 
 	@GetMapping("/")
 	public ResponseEntity<?> index() {
-		responseMap = new HashMap<String, Object>();
+		responseMap = new HashMap<>();
 		List<Usuario> listUsuario = usuarioService.findAll();
 		if (listUsuario.isEmpty()) {
-			responseMap.put("mensaje", "No existen registros en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.NOT_FOUND);
+			responseMap.put(MENSAJE, "No existen registros en la base de datos");
+			return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<List<Usuario>>(listUsuario, HttpStatus.OK);
+		return new ResponseEntity<>(listUsuario, HttpStatus.OK);
 	}
 
 	@GetMapping("/page/{page}")
 	public ResponseEntity<?> index(@PathVariable Integer page) {
-		responseMap = new HashMap<String, Object>();
+		responseMap = new HashMap<>();
 		Pageable pageable = PageRequest.of(page, 10);
 		Page<Usuario> listUsuario = usuarioService.findAll(pageable);
 		if (listUsuario.isEmpty()) {
-			responseMap.put("mensaje", "No existen registros en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.NOT_FOUND);
+			responseMap.put(MENSAJE, "No existen registros en la base de datos");
+			return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<Page<Usuario>>(listUsuario, HttpStatus.OK);
+		return new ResponseEntity<>(listUsuario, HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		responseMap = new HashMap<String, Object>();
+		responseMap = new HashMap<>();
 		Usuario usuario = usuarioService.findById(id);
 		if (usuario == null) {
-			responseMap.put("mensaje", "El usuario no existe en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.NOT_FOUND);
+			responseMap.put(MENSAJE, "El usuario no existe en la base de datos");
+			return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<Usuario>(usuario, HttpStatus.OK);
+		return new ResponseEntity<>(usuario, HttpStatus.OK);
 	}
 
 	@PostMapping("/")
 	public ResponseEntity<?> create(@Valid @RequestBody Usuario usuario, BindingResult result) {
 		Usuario usuarioExample = null;
-		responseMap = new HashMap<String, Object>();
+		responseMap = new HashMap<>();
 
 		if (result.hasErrors()) {
 			List<String> bindingErrorsList = new ArrayList<>();
@@ -90,26 +87,26 @@ public class UsuarioController {
 				bindingErrorsList.add(error.getDefaultMessage() + " " + error.getDefaultMessage());
 			}
 			responseMap.put("bindingErrors", bindingErrorsList);
-			return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		try {
 			usuarioExample = usuarioService.save(usuario);
 		} catch (DataAccessException e) {
-			responseMap.put("mensaje", "El usuario no se pudo insertar en la base de datos");
-			responseMap.put("error", e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
+			responseMap.put(MENSAJE, "El usuario no se pudo insertar en la base de datos");
+			responseMap.put(ERROR, e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		responseMap.put("mensaje", "El usuario se ha creado con éxito");
+		responseMap.put(MENSAJE, "El usuario se ha creado con éxito");
 		responseMap.put("usuario", usuarioExample);
-		return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.CREATED);
+		return new ResponseEntity<>(responseMap, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<?> update(@Valid @RequestBody Usuario usuario, BindingResult result, @PathVariable Long id) {
 		Usuario usuarioExample = usuarioService.findById(id);
-		responseMap = new HashMap<String, Object>();
+		responseMap = new HashMap<>();
 		Usuario usuarioModificado = null;
 
 		if (result.hasErrors()) {
@@ -119,12 +116,12 @@ public class UsuarioController {
 				bindingErrorsList.add(error.getDefaultMessage() + " " + error.getDefaultMessage());
 			}
 			responseMap.put("bindingErrors", bindingErrorsList);
-			return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		if (usuarioExample == null) {
-			responseMap.put("mensaje", "El usuario no ha podido editar");
-			return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.NOT_FOUND);
+			responseMap.put(MENSAJE, "El usuario no ha podido editar");
+			return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
 		}
 
 		try {
@@ -132,37 +129,37 @@ public class UsuarioController {
 			usuarioExample.setPassword(usuario.getPassword());
 			usuarioModificado = usuarioService.save(usuarioExample);
 		} catch (DataAccessException e) {
-			responseMap.put("mensaje", "No se ha podido actualizar el usuario en la base de datos");
-			responseMap.put("error", e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
+			responseMap.put(MENSAJE, "No se ha podido actualizar el usuario en la base de datos");
+			responseMap.put(ERROR, e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		responseMap.put("mensaje", "Se ha actualizado exitosamente");
+		responseMap.put(MENSAJE, "Se ha actualizado exitosamente");
 		responseMap.put("usuario", usuarioModificado);
-		return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.CREATED);
+		return new ResponseEntity<>(responseMap, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
-		responseMap = new HashMap<String, Object>();
+		responseMap = new HashMap<>();
 		try {
 			usuarioService.delete(id);
 		} catch (DataAccessException e) {
-			responseMap.put("mensaje", "No se ha podido borrar el usuario en la base de datos");
-			responseMap.put("error", e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
+			responseMap.put(MENSAJE, "No se ha podido borrar el usuario en la base de datos");
+			responseMap.put(ERROR, e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		responseMap.put("mensaje", "Se ha borrado el usuario exitosamente");
-		return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.CREATED);
+		responseMap.put(MENSAJE, "Se ha borrado el usuario exitosamente");
+		return new ResponseEntity<>(responseMap, HttpStatus.CREATED);
 	}
 
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-		return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.CREATED);
+		return new ResponseEntity<>(responseMap, HttpStatus.CREATED);
 	}
 
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody LoginRequest loginRequest) {
-		return new ResponseEntity<Map<String, Object>>(responseMap, HttpStatus.CREATED);
+		return new ResponseEntity<>(responseMap, HttpStatus.CREATED);
 	}
 
 	public IUsuarioSerivce getUsuarioService() {
